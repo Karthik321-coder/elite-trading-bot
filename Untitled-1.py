@@ -6577,27 +6577,38 @@ class DhanClient:
                         logger.warning(f"⚠️ Holdings API call failed: {holdings_error}")
                         response = None
                     
-                    # ⚡ FIX: Check if response is dict before accessing
-                    if response and isinstance(response, dict) and 'data' in response:
-                        for holding in response['data']:
-                            account_info['holdings'].append({
-                                'symbol': holding.get('tradingSymbol', 'UNKNOWN'),
-                                'security_id': holding.get('securityId', ''),
-                                'exchange': holding.get('exchangeSegment', 'NSE_EQ'),
-                                'quantity': int(holding.get('totalQty', 0)),
-                                'avg_price': float(holding.get('avgCostPrice', 0)),
-                                'ltp': float(holding.get('lastTradedPrice', 0)),
-                                'pnl': float(holding.get('realizedProfit', 0)),
-                                'pnl_percent': float(holding.get('profitLossPercentage', 0)),
-                                'value': float(holding.get('currentValue', 0))
-                            })
-                        logger.info(f"✅ Holdings: {len(account_info['holdings'])} stocks found")
-                    elif response and isinstance(response, str):
-                        logger.warning(f"⚠️ Holdings API returned string error: {response}")
+                    # ⚡ FIX: Robust type checking before accessing response
+                    if response is None:
+                        logger.debug("✓ No holdings found (API returned None)")
+                    elif isinstance(response, str):
+                        # API returned error string
+                        logger.warning(f"⚠️ Holdings API returned error: {response}")
+                    elif isinstance(response, dict):
+                        # Valid dict response
+                        if 'data' in response and isinstance(response['data'], list):
+                            for holding in response['data']:
+                                # Extra safety: ensure holding is a dict
+                                if isinstance(holding, dict):
+                                    account_info['holdings'].append({
+                                        'symbol': holding.get('tradingSymbol', 'UNKNOWN'),
+                                        'security_id': holding.get('securityId', ''),
+                                        'exchange': holding.get('exchangeSegment', 'NSE_EQ'),
+                                        'quantity': int(holding.get('totalQty', 0)),
+                                        'avg_price': float(holding.get('avgCostPrice', 0)),
+                                        'ltp': float(holding.get('lastTradedPrice', 0)),
+                                        'pnl': float(holding.get('realizedProfit', 0)),
+                                        'pnl_percent': float(holding.get('profitLossPercentage', 0)),
+                                        'value': float(holding.get('currentValue', 0))
+                                    })
+                            logger.info(f"✅ Holdings: {len(account_info['holdings'])} stocks found")
+                        else:
+                            logger.debug("✓ No holdings found (empty data)")
                     else:
-                        logger.debug("✓ No holdings found (account empty)")
+                        logger.warning(f"⚠️ Unexpected holdings response type: {type(response)}")
             except Exception as e:
                 logger.error(f"❌ Unexpected error fetching holdings: {e}")
+                import traceback
+                logger.debug(traceback.format_exc())
             
             # ═══════ POSITIONS (Intraday/Overnight) - REAL-TIME ═══════
             logger.info("📊 Fetching Real-Time Positions...")
@@ -8033,6 +8044,13 @@ class TradingBot:
             self.total_balance = balance_info['total_balance']
             self.starting_capital = balance_info['available_balance']  # ⚡ Track starting balance for growth calculations
             logger.info(f"✅ Real-Time Capital Initialized: Available=Rs.{self.current_capital:,.2f}, Total=Rs.{self.total_balance:,.2f}")
+            
+            # ⚠️ WARNING: Check if capital is too low for trading
+            if self.current_capital < 100:
+                logger.warning(f"⚠️⚠️⚠️ CRITICAL: Available capital (Rs.{self.current_capital:,.2f}) is VERY LOW!")
+                logger.warning("⚠️  Bot will scan and analyze but may not place trades due to insufficient funds")
+                logger.warning("⚠️  Recommended minimum: Rs.500 for safe trading")
+                logger.warning("⚠️  Current capital allows: ~0 trades (Rs.11 too low for position sizing)")
         else:
             self.current_capital = Config.INITIAL_CAPITAL
             self.total_balance = Config.INITIAL_CAPITAL
