@@ -1,0 +1,36 @@
+# ==================== Core Trading Libraries ====================
+numpy
+pandas
+scipy
+scikit-learn
+xgboost
+lightgbm
+catboost
+vaderSentiment
+shap
+openai
+newsapi-python
+PyWavelets
+antropy
+hurst
+tensorflow
+python-dotenv
+dhanhq
+
+# ==================== Global Mobile Server ====================
+# Web Framework
+flask>=2.3.0
+flask-socketio>=5.3.0
+flask-cors>=4.0.0
+python-socketio>=5.9.0
+werkzeug>=2.3.0
+
+# System Monitoring
+psutil>=5.9.0
+
+# Global Access (Ngrok)
+pyngrok>=6.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+

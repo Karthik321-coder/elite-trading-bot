@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Elite Trading Bot - Dashboard</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-dark: #1f2937;
+            --bg-light: #f9fafb;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            padding-bottom: 60px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.running {
+            background: var(--success);
+        }
+
+        .status-dot.stopped {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-start {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-stop {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-restart {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .metric-unit {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-left: 4px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logs-container {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            color: #d4d4d4;
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+
+        .log-entry.info {
+            color: #4ec9b0;
+        }
+
+        .log-entry.warning {
+            color: #dcdcaa;
+        }
+
+        .log-entry.error {
+            color: #f48771;
+        }
+
+        .log-entry.success {
+            color: #4ec9b0;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 12px;
+            z-index: 99;
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .connection-dot.connected {
+            background: var(--success);
+        }
+
+        .connection-dot.disconnected {
+            background: var(--danger);
+        }
+
+        @media (max-width: 600px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-value {
+                font-size: 20px;
+            }
+
+            .logs-container {
+                max-height: 300px;
+                font-size: 11px;
+            }
+        }
+
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .system-metric {
+            text-align: center;
+            padding: 10px;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .system-metric-label {
+            font-size: 10px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .system-metric-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .progress-fill.high {
+            background: var(--danger);
+        }
+
+        .progress-fill.medium {
+            background: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🚀 Elite Trading Bot</h1>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="connection-status" id="connectionStatus">
+        <span class="connection-dot disconnected" id="connectionDot"></span>
+        <span id="connectionText">Connecting...</span>
+    </div>
+
+    <div class="container">
+        <!-- Bot Status Card -->
+        <div class="status-card">
+            <div class="status-header">
+                <div class="status-indicator">
+                    <div class="status-dot stopped" id="statusDot"></div>
+                    <span class="status-text" id="statusText">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="control-buttons">
+                <button class="btn btn-start" id="startBtn" onclick="startBot()">
+                    ▶️ Start
+                </button>
+                <button class="btn btn-stop" id="stopBtn" onclick="stopBot()">
+                    ⏸️ Stop
+                </button>
+                <button class="btn btn-restart" id="restartBtn" onclick="restartBot()">
+                    🔄 Restart
+                </button>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Uptime</div>
+                    <div class="metric-value" id="uptime">0<span class="metric-unit">s</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="metric-value" id="cpuUsage">0<span class="metric-unit">%</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Memory</div>
+                    <div class="metric-value" id="memoryUsage">0<span class="metric-unit">MB</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">PID</div>
+                    <div class="metric-value" id="pid">-</div>
+                </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="section-title">💻 System Resources</div>
+            <div class="system-info">
+                <div class="system-metric">
+                    <div class="system-metric-label">CPU</div>
+                    <div class="system-metric-value" id="systemCpu">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="systemCpuBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="system-metric">
+                    <div class="system-metric-label">RAM</div>
+                    <div class="system-metric-value" id="systemRam">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="systemRamBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="system-metric">
+                    <div class="system-metric-label">Disk</div>
+                    <div class="system-metric-value" id="systemDisk">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="systemDiskBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Card -->
+        <div class="status-card">
+            <div class="section-title">📜 Live Logs</div>
+            <div class="logs-container" id="logsContainer">
+                <div class="log-entry">Waiting for logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+
+        let botStatus = { running: false };
+
+        // Connection status
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            document.getElementById('connectionDot').className = 'connection-dot connected';
+            document.getElementById('connectionText').textContent = 'Connected';
+            loadInitialData();
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            document.getElementById('connectionDot').className = 'connection-dot disconnected';
+            document.getElementById('connectionText').textContent = 'Disconnected';
+        });
+
+        // Real-time status updates
+        socket.on('status_update', (status) => {
+            updateStatus(status);
+        });
+
+        // Real-time log updates
+        socket.on('log_update', (data) => {
+            addLogEntry(data.log);
+        });
+
+        // Load initial data
+        async function loadInitialData() {
+            await updateBotStatus();
+            await updateSystemInfo();
+            await loadLogs();
+        }
+
+        // Update bot status
+        async function updateBotStatus() {
+            try {
+                const response = await fetch('/api/bot/status');
+                const status = await response.json();
+                updateStatus(status);
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
+        }
+
+        // Update status display
+        function updateStatus(status) {
+            botStatus = status;
+            
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const restartBtn = document.getElementById('restartBtn');
+
+            if (status.running) {
+                statusDot.className = 'status-dot running';
+                statusText.textContent = 'Running';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                restartBtn.disabled = false;
+
+                // Update metrics
+                document.getElementById('uptime').innerHTML = formatUptime(status.uptime) + '<span class="metric-unit">s</span>';
+                document.getElementById('cpuUsage').innerHTML = (status.cpu_percent || 0).toFixed(1) + '<span class="metric-unit">%</span>';
+                document.getElementById('memoryUsage').innerHTML = (status.memory_mb || 0).toFixed(0) + '<span class="metric-unit">MB</span>';
+                document.getElementById('pid').textContent = status.pid || '-';
+            } else {
+                statusDot.className = 'status-dot stopped';
+                statusText.textContent = status.status || 'Stopped';
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                restartBtn.disabled = true;
+
+                // Reset metrics
+                document.getElementById('uptime').innerHTML = '0<span class="metric-unit">s</span>';
+                document.getElementById('cpuUsage').innerHTML = '0<span class="metric-unit">%</span>';
+                document.getElementById('memoryUsage').innerHTML = '0<span class="metric-unit">MB</span>';
+                document.getElementById('pid').textContent = '-';
+            }
+        }
+
+        // Update system info
+        async function updateSystemInfo() {
+            try {
+                const response = await fetch('/api/system/info');
+                const info = await response.json();
+
+                document.getElementById('systemCpu').textContent = info.cpu_percent.toFixed(1) + '%';
+                document.getElementById('systemRam').textContent = info.memory_percent.toFixed(1) + '%';
+                document.getElementById('systemDisk').textContent = info.disk_percent.toFixed(1) + '%';
+
+                updateProgressBar('systemCpuBar', info.cpu_percent);
+                updateProgressBar('systemRamBar', info.memory_percent);
+                updateProgressBar('systemDiskBar', info.disk_percent);
+            } catch (error) {
+                console.error('Error fetching system info:', error);
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar(id, percent) {
+            const bar = document.getElementById(id);
+            bar.style.width = percent + '%';
+            
+            if (percent > 80) {
+                bar.className = 'progress-fill high';
+            } else if (percent > 60) {
+                bar.className = 'progress-fill medium';
+            } else {
+                bar.className = 'progress-fill';
+            }
+        }
+
+        // Load logs
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/bot/logs?count=50');
+                const data = await response.json();
+                
+                const container = document.getElementById('logsContainer');
+                container.innerHTML = '';
+                
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => addLogEntry(log));
+                } else {
+                    container.innerHTML = '<div class="log-entry">No logs yet...</div>';
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+
+        // Add log entry
+        function addLogEntry(log) {
+            const container = document.getElementById('logsContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            // Determine log type from content
+            if (log.includes('ERROR') || log.includes('❌')) {
+                entry.className += ' error';
+            } else if (log.includes('WARNING') || log.includes('⚠️')) {
+                entry.className += ' warning';
+            } else if (log.includes('✅') || log.includes('SUCCESS')) {
+                entry.className += ' success';
+            } else if (log.includes('INFO')) {
+                entry.className += ' info';
+            }
+            
+            entry.textContent = log;
+            container.appendChild(entry);
+            
+            // Auto-scroll to bottom
+            container.scrollTop = container.scrollHeight;
+            
+            // Keep max 200 logs
+            while (container.children.length > 200) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        // Bot control functions
+        async function startBot() {
+            try {
+                showToast('Starting bot...');
+                const response = await fetch('/api/bot/start', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('✅ Bot started successfully!');
+                    setTimeout(updateBotStatus, 1000);
+                } else {
+                    showToast('❌ ' + result.message);
+                }
+            } catch (error) {
+                showToast('❌ Error starting bot');
+                console.error(error);
+            }
+        }
+
+        async function stopBot() {
+            try {
+                showToast('Stopping bot...');
+                const response = await fetch('/api/bot/stop', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('✅ Bot stopped successfully!');
+                    setTimeout(updateBotStatus, 1000);
+                } else {
+                    showToast('❌ ' + result.message);
+                }
+            } catch (error) {
+                showToast('❌ Error stopping bot');
+                console.error(error);
+            }
+        }
+
+        async function restartBot() {
+            try {
+                showToast('Restarting bot...');
+                const response = await fetch('/api/bot/restart', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('✅ Bot restarted successfully!');
+                    setTimeout(updateBotStatus, 2000);
+                } else {
+                    showToast('❌ ' + result.message);
+                }
+            } catch (error) {
+                showToast('❌ Error restarting bot');
+                console.error(error);
+            }
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // Format uptime
+        function formatUptime(seconds) {
+            if (!seconds) return '0';
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${secs}s`;
+            } else {
+                return `${secs}`;
+            }
+        }
+
+        // Periodic updates
+        setInterval(updateSystemInfo, 5000);
+        setInterval(() => {
+            if (botStatus.running) {
+                socket.emit('request_status_update');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
