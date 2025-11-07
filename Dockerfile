@@ -55,16 +55,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy ONLY necessary files (NOT entire directory)
+# Copy only essential bot files (deleted obsolete files)
 COPY Untitled-1.py .
-COPY global_mobile_server.py .
-COPY cloud_deploy.py .
-COPY ultimate_bot_integration.py .
-COPY ULTIMATE_PROFESSIONAL_FEATURES.py .
 COPY ULTIMATE_SECURITY_SYSTEM.py .
+COPY STOCK_DATABASE_NSE_BSE.py .
+COPY ADVANCED_RISK_MANAGEMENT.py .
+COPY generate_paper_trading_report.py .
+COPY verify_dhan_account.py .
+COPY SECURITY_STATUS.py .
+COPY SETUP_SECURITY.py .
 COPY requirements.txt .
-COPY .env .
+COPY security_requirements.txt .
+
+# Copy templates for web dashboard
 COPY templates/ ./templates/
+
+# NOTE: .env is NOT copied - Railway sets environment variables automatically!
 
 # Create directories
 RUN mkdir -p logs compliance_logs strategies secure_vault secure_keys
