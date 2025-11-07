@@ -688,22 +688,33 @@ def colorize(text: str, color: str) -> str:
     return f"{color}{text}{Colors.END}" if Config.USE_COLORS else text
 
 def setup_logging():
-    """Setup logging"""
+    """Setup logging - FIXED: Prevent duplicate handlers"""
+    logger = logging.getLogger(__name__)
+    
+    # CRITICAL FIX: Clear existing handlers to prevent duplicates
+    if logger.hasHandlers():
+        logger.handlers.clear()
+    
+    logger.setLevel(Config.LOG_LEVEL)
+    
+    # Create formatter
     formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
    
+    # File handler
     file_handler = logging.FileHandler(Config.LOG_FILE, encoding='utf-8')
     file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
    
+    # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
-   
-    logger = logging.getLogger(__name__)
-    logger.setLevel(Config.LOG_LEVEL)
-    logger.addHandler(file_handler)
     logger.addHandler(console_handler)
+   
+    # Prevent propagation to root logger (avoids duplicates)
+    logger.propagate = False
    
     return logger
 
