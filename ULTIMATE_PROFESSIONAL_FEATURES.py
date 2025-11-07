@@ -63,10 +63,19 @@ class UltraLowLatencyExecutor:
 class MultiExchangeArbitrage:
     """Multi-exchange arbitrage detection"""
     
-    def __init__(self):
-        self.exchanges = ['NSE', 'BSE']
+    def __init__(self, exchanges: List[str] = None, min_profit_bps: float = 10.0):
+        """
+        Initialize Multi-Exchange Arbitrage Engine
+        
+        Args:
+            exchanges: List of exchanges to monitor (e.g., ['NSE', 'BSE', 'MCX'])
+            min_profit_bps: Minimum profit in basis points (1 bps = 0.01%)
+        """
+        self.exchanges = exchanges or ['NSE', 'BSE']
+        self.min_profit_bps = min_profit_bps
+        self.min_spread = min_profit_bps / 10000.0  # Convert bps to decimal
         self.price_cache = {}
-        logger.info("✅ Multi-Exchange Arbitrage initialized")
+        logger.info(f"✅ Multi-Exchange Arbitrage initialized ({len(self.exchanges)} exchanges, min profit: {min_profit_bps} bps)")
     
     def find_arbitrage(self, symbol: str) -> Optional[Dict]:
         """Find arbitrage opportunities"""
@@ -81,7 +90,7 @@ class MultiExchangeArbitrage:
             
             spread = abs(nse_price - bse_price) / base_price
             
-            if spread > 0.001:  # 0.1% minimum spread
+            if spread > self.min_spread:
                 return {
                     'symbol': symbol,
                     'buy_exchange': 'BSE' if bse_price < nse_price else 'NSE',
