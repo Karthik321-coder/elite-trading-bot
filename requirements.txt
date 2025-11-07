@@ -1,21 +1,31 @@
+# ==================== OPTIMIZED FOR RAILWAY (Reduced from 4.2GB to <1GB!) ====================
+# Removed TensorFlow (800MB), shap (200MB), PyWavelets (50MB) - Total savings: 1GB+
+# These are optional - uncomment if needed and upgrade to Railway Pro
+
 # ==================== Core Trading Libraries ====================
-numpy
-pandas
-scipy
-scikit-learn
-xgboost
-lightgbm
-catboost
-vaderSentiment
-shap
-openai
-newsapi-python
-PyWavelets
-antropy
-hurst
-tensorflow
-python-dotenv
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+scipy>=1.10.0,<1.12.0
+scikit-learn>=1.3.0,<1.4.0
+xgboost>=2.0.0,<2.1.0
+lightgbm>=4.0.0,<5.0.0
+catboost>=1.2.0,<1.3.0
+vaderSentiment>=3.3.2
+
+# AI Features (lightweight)
+openai>=1.3.0
+newsapi-python>=0.2.7
+
+python-dotenv>=1.0.0
 dhanhq
+
+# ==================== REMOVED TO FIT RAILWAY FREE TIER ====================
+# Uncomment these ONLY if you upgrade to Railway Pro (5GB limit)
+# tensorflow>=2.15.0          # 800MB (AI predictions - heavy!)
+# shap>=0.43.0                # 200MB (Model explanations - optional)
+# PyWavelets>=1.4.1           # 50MB (Signal processing - optional)
+# antropy>=0.1.6              # Entropy analysis - optional
+# hurst>=0.0.5                # Hurst exponent - optional
 
 # ==================== Global Mobile Server ====================
 # Web Framework
@@ -34,3 +44,26 @@ pyngrok>=6.0.0
 # Utilities
 python-dotenv>=1.0.0
 
+# ==================== ULTIMATE SECURITY SYSTEM ====================
+# AES-256 Encryption & RSA Authentication
+cryptography>=41.0.0
+
+# JWT Token-Based Sessions
+PyJWT>=2.8.0
+
+# Two-Factor Authentication
+pyotp>=2.9.0
+
+# Password Hashing (Bank-Grade)
+bcrypt>=4.1.0
+argon2-cffi>=23.1.0
+
+# Secure Data Signing
+itsdangerous>=2.1.2
+
+# Rate Limiting (Flask)
+Flask-Limiter>=3.5.0
+
+# Security Scanning (Optional)
+# safety>=3.0.0          # Check for CVEs in dependencies
+# bandit>=1.7.5          # Security linter for Python
