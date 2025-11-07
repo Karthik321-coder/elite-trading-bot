@@ -84,9 +84,9 @@ ENV PYTHONUNBUFFERED=1 \
 # Expose port
 EXPOSE 5000
 
-# Lightweight health check
-HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=2 \
-    CMD curl -f http://localhost:5000/api/bot/status || exit 1
+# Lightweight health check (disabled - no web endpoint in main bot)
+# HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=2 \
+#     CMD curl -f http://localhost:5000/api/bot/status || exit 1
 
-# Start bot
-CMD ["python", "-u", "cloud_deploy.py"]
+# Start the main trading bot
+CMD ["python", "-u", "Untitled-1.py"]
