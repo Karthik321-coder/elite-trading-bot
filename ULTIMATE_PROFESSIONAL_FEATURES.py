@@ -224,11 +224,13 @@ class ComplianceLogger:
 class DisasterRecovery:
     """Disaster recovery and backup"""
     
-    def __init__(self):
+    def __init__(self, role: str = 'primary', backup_host: str = None):
+        self.role = role
+        self.backup_host = backup_host
         self.backup_interval = 300  # 5 minutes
         self.last_backup = datetime.now()
         self.checkpoints = deque(maxlen=10)
-        logger.info("✅ Disaster Recovery initialized")
+        logger.info(f"✅ Disaster Recovery initialized (role={role}, backup_host={backup_host})")
     
     def create_checkpoint(self, state: Dict):
         """Create system checkpoint"""
@@ -260,9 +262,10 @@ class DisasterRecovery:
 class PlatformBridge:
     """Bridge to other trading platforms"""
     
-    def __init__(self):
+    def __init__(self, platform: str = 'custom'):
+        self.platform = platform
         self.supported_platforms = ['Zerodha', 'Upstox', 'Angel', 'ICICI']
-        logger.info(f"✅ Platform Bridge initialized ({len(self.supported_platforms)} platforms)")
+        logger.info(f"✅ Platform Bridge initialized ({len(self.supported_platforms)} platforms, platform={platform})")
     
     def sync_portfolio(self, platform: str) -> Dict:
         """Sync portfolio with external platform"""
