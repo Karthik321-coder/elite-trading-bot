@@ -10782,8 +10782,8 @@ Volume: {self.historical_data[symbol][-1].get('volume', 0):,}
         pnl_color = Colors.GREEN if pnl > 0 else Colors.RED if pnl < 0 else Colors.YELLOW
         pnl_icon = "🚀" if pnl > 5000 else "📈" if pnl > 0 else "📉" if pnl < 0 else "➖"
        
-        # Calculate comprehensive P&L metrics
-        initial_capital = Config.INITIAL_CAPITAL
+        # Calculate comprehensive P&L metrics using REAL starting capital
+        initial_capital = self.starting_capital  # ✅ Use actual Dhan balance
         pnl_pct = (pnl / initial_capital) * 100 if initial_capital > 0 else 0
         
         # Calculate hourly P&L velocity
@@ -11611,8 +11611,8 @@ Volume: {self.historical_data[symbol][-1].get('volume', 0):,}
             logger.info(f"  {Colors.BOLD}Hourly P&L:{Colors.END}      {pnl_color}{Colors.BOLD}Rs.{pnl_per_hour:+,.0f}/hour{Colors.END}")
             logger.info(f"  {Colors.BOLD}Trade Velocity:{Colors.END}  {Colors.CYAN}{trades_per_hour:.2f} trades/hour{Colors.END}")
         
-        # Capital Growth Analysis
-        initial_capital = Config.INITIAL_CAPITAL
+        # Capital Growth Analysis - ✅ USE REAL STARTING BALANCE
+        initial_capital = self.starting_capital  # ✅ Use actual starting balance from Dhan API, not Config
         final_capital = self.current_capital + pnl
         capital_growth = final_capital - initial_capital
         
