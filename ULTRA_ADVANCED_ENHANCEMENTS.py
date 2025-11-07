@@ -22,8 +22,10 @@ logger = logging.getLogger(__name__)
 class UltraAdvancedEnhancements:
     """Ultra-Advanced Features for Elite Trading Bot"""
     
-    def __init__(self):
+    def __init__(self, dhan_client=None, config=None):
         """Initialize ultra-advanced enhancement systems"""
+        self.dhan_client = dhan_client
+        self.config = config
         self.enabled = True
         self.features = {
             'pattern_recognition': True,
@@ -31,7 +33,7 @@ class UltraAdvancedEnhancements:
             'hf_processing': True,
             'microstructure': True
         }
-        logger.info("✅ Ultra-Advanced Enhancements initialized")
+        logger.info(f"✅ Ultra-Advanced Enhancements initialized (dhan_client={'Present' if dhan_client else 'None'})")
     
     def analyze_pattern(self, data: np.ndarray) -> Dict:
         """Advanced pattern recognition using deep learning"""
