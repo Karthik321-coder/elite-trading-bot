@@ -66,23 +66,18 @@ COPY main.py .
 # Organized source code structure
 COPY src/ ./src/
 
-# Configuration files (create directory first, then copy if exists)
-RUN mkdir -p config
-COPY config/ ./config/ 
-
 # Requirements
 COPY requirements.txt .
 COPY security_requirements.txt .
 
-# Templates for web dashboard (create directory first)
-RUN mkdir -p templates
+# Templates for web dashboard
 COPY templates/ ./templates/
 
-# Documentation (create directory first) 
-RUN mkdir -p docs
+# Documentation
 COPY docs/ ./docs/
 
 # NOTE: .env is NOT copied - Railway sets environment variables automatically!
+# NOTE: config/ directory will be created at runtime (contains sensitive files)
 
 # Create necessary directories
 RUN mkdir -p logs compliance_logs strategies secure_vault secure_keys data
