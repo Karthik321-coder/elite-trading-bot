@@ -57,31 +57,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy only essential bot files (deleted obsolete files)
-COPY Untitled-1.py .
-COPY ULTIMATE_SECURITY_SYSTEM.py .
-COPY STOCK_DATABASE_NSE_BSE.py .
-COPY ADVANCED_RISK_MANAGEMENT.py .
-COPY generate_paper_trading_report.py .
-COPY verify_dhan_account.py .
-COPY SECURITY_STATUS.py .
-COPY SETUP_SECURITY.py .
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🚀 PROFESSIONAL STRUCTURE - Copy organized project files
+# ═══════════════════════════════════════════════════════════════════════════════
+# Main entry point
+COPY main.py .
+
+# Organized source code structure
+COPY src/ ./src/
+
+# Configuration files (create directory first, then copy if exists)
+RUN mkdir -p config
+COPY config/ ./config/ 
+
+# Requirements
 COPY requirements.txt .
 COPY security_requirements.txt .
 
-# Copy templates for web dashboard
+# Templates for web dashboard (create directory first)
+RUN mkdir -p templates
 COPY templates/ ./templates/
+
+# Documentation (create directory first) 
+RUN mkdir -p docs
+COPY docs/ ./docs/
 
 # NOTE: .env is NOT copied - Railway sets environment variables automatically!
 
-# Create directories
-RUN mkdir -p logs compliance_logs strategies secure_vault secure_keys
+# Create necessary directories
+RUN mkdir -p logs compliance_logs strategies secure_vault secure_keys data
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1 \
     PORT=5000 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 # Expose port
 EXPOSE 5000
@@ -90,5 +101,5 @@ EXPOSE 5000
 # HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=2 \
 #     CMD curl -f http://localhost:5000/api/bot/status || exit 1
 
-# Start the main trading bot
-CMD ["python", "-u", "Untitled-1.py"]
+# Start the main trading bot with new entry point
+CMD ["python", "-u", "main.py"]
