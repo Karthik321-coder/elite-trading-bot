@@ -75,7 +75,7 @@ load_dotenv()  # This must be called BEFORE Config class is initialized
 # 🔒 ULTIMATE SECURITY SYSTEM INTEGRATION - BANK-GRADE PROTECTION
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from ULTIMATE_SECURITY_SYSTEM import UltimateSecurityManager
+    from src.modules.security.ULTIMATE_SECURITY_SYSTEM import UltimateSecurityManager
     SECURITY_AVAILABLE = True
     print("✅ Ultimate Security System loaded successfully!")
 except ImportError as e:
@@ -106,7 +106,7 @@ except ImportError:
 #                    ULTRA-ADVANCED V3.3 ENHANCEMENTS
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from ULTRA_ADVANCED_ENHANCEMENTS import (
+    from src.modules.ai.ULTRA_ADVANCED_ENHANCEMENTS import (
         UltraAdvancedTradingSystem,
         InstitutionalOrderFlowAnalyzer,
         MultiTimeframeConfluence,
@@ -130,7 +130,7 @@ except ImportError as e:
 #                    🚀 PRODUCTION-GRADE MODULES V3.4 INTEGRATION
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from PRODUCTION_FIXES import (
+    from src.modules.trading.PRODUCTION_FIXES import (
         DhanTokenManager,
         CircuitBreaker,
         PerformanceMonitor,
@@ -143,7 +143,7 @@ except ImportError as e:
     print(f"⚠️  Production fixes not available: {e}")
 
 try:
-    from REALTIME_WEBSOCKET_ENGINE import (
+    from src.modules.risk.REALTIME_WEBSOCKET_ENGINE import (
         WebSocketStreamEngine,
         RESTPollingEngine,
         TickData,
@@ -156,7 +156,7 @@ except ImportError as e:
     print(f"⚠️  WebSocket engine not available: {e}")
 
 try:
-    from ADVANCED_RISK_MANAGEMENT import (
+    from src.modules.risk.ADVANCED_RISK_MANAGEMENT import (
         AdvancedRiskManager,
         Position
     )
@@ -167,7 +167,7 @@ except ImportError as e:
     print(f"⚠️  Advanced risk management not available: {e}")
 
 try:
-    from MONITORING_DASHBOARD import (
+    from src.modules.monitoring.MONITORING_DASHBOARD import (
         PerformanceDashboard,
         AlertSystem,
         AutoRestartManager
@@ -179,7 +179,7 @@ except ImportError as e:
     print(f"⚠️  Monitoring system not available: {e}")
 
 try:
-    from SECURITY_MODULE import (
+    from src.modules.security.SECURITY_MODULE import (
         EncryptedCredentialManager,
         APIKeyValidator,
         SecureEnvironmentLoader
@@ -194,7 +194,7 @@ except ImportError as e:
 #              🏆 ULTIMATE PROFESSIONAL FEATURES V4.0 - WORLD-CLASS
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from ULTIMATE_PROFESSIONAL_FEATURES import (
+    from src.modules.trading.ULTIMATE_PROFESSIONAL_FEATURES import (
         UltraLowLatencyEngine,
         MultiExchangeArbitrageEngine,
         OnlineLearningAI,
@@ -215,7 +215,7 @@ except ImportError as e:
 #                    COMPREHENSIVE STOCK DATABASE (ALL NSE/BSE)
 # ═══════════════════════════════════════════════════════════════════════════════
 try:
-    from STOCK_DATABASE_NSE_BSE import (
+    from src.utils.STOCK_DATABASE_NSE_BSE import (
         get_all_stocks_above_300,
         get_priority_stocks,
         get_top_n_stocks,
@@ -7973,7 +7973,7 @@ class TradingBot:
         # Real-Time Email Monitor - Automated reporting
         if MONITORING_AVAILABLE and self.alert_system and self.performance_dashboard:
             try:
-                from MONITORING_DASHBOARD import RealTimeEmailMonitor
+                from src.modules.monitoring.MONITORING_DASHBOARD import RealTimeEmailMonitor
                 self.email_monitor = RealTimeEmailMonitor(
                     self.alert_system,
                     self.performance_dashboard
@@ -10020,15 +10020,20 @@ Volume: {self.historical_data[symbol][-1].get('volume', 0):,}
                 # 2. ONLINE LEARNING AI - INITIAL FEATURES
                 if self.online_ai and ULTIMATE_FEATURES_AVAILABLE and self.online_ai.enabled:
                     # Store features for later learning update
-                    trade_features = np.array([
-                        prediction.confidence,
-                        indicators.get('rsi', 50),
-                        indicators.get('macd', 0),
-                        price / indicators.get('sma_50', price),
-                        1  # Other features...
-                    ])
-                    # Will be updated on trade close with actual profit
-                    logger.debug("✅ Trade features stored for online learning")
+                    # Get indicators from recent analysis or use defaults
+                    try:
+                        recent_indicators = getattr(self, 'last_indicators', {})
+                        trade_features = np.array([
+                            prediction.confidence,
+                            recent_indicators.get('rsi', 50),
+                            recent_indicators.get('macd', 0),
+                            price / recent_indicators.get('sma_50', price),
+                            1  # Other features...
+                        ])
+                        # Will be updated on trade close with actual profit
+                        logger.debug("✅ Trade features stored for online learning")
+                    except Exception as e:
+                        logger.debug(f"Online learning feature storage skipped: {e}")
                 
                 # 3. DISASTER RECOVERY - SAVE STATE
                 if self.disaster_recovery and ULTIMATE_FEATURES_AVAILABLE:
