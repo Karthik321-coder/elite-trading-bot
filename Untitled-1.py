@@ -5882,7 +5882,10 @@ class DhanClient:
                 # 🔐 V3.4 TOKEN VALIDATION - Auto-detect expiry
                 # ═══════════════════════════════════════════════════════════════════════
                 if PRODUCTION_FIXES_AVAILABLE:
-                    token_mgr = DhanTokenManager(Config.CLIENT_ID, Config.ACCESS_TOKEN)
+                    token_mgr = DhanTokenManager(
+                        client_id=Config.CLIENT_ID,
+                        access_token=Config.ACCESS_TOKEN
+                    )
                     is_valid, message, details = token_mgr.validate_token()
                     
                     if not is_valid:
@@ -7802,16 +7805,16 @@ class TradingBot:
             try:
                 logger.info("🔒 Initializing Ultimate Security System...")
                 self.security_manager = UltimateSecurityManager(
-                    master_password=Config.SECURITY_MASTER_PASSWORD,
-                    jwt_secret=Config.JWT_SECRET_KEY
+                    master_password=Config.SECURITY_MASTER_PASSWORD
                 )
                 
                 # Load credentials from encrypted vault
                 if Config.CLIENT_ID == "1108804283" and not Config.ACCESS_TOKEN:
                     try:
-                        Config.CLIENT_ID = self.security_manager.vault.get_secret('DHAN_CLIENT_ID') or Config.CLIENT_ID
-                        Config.ACCESS_TOKEN = self.security_manager.vault.get_secret('DHAN_ACCESS_TOKEN') or ""
-                        logger.info("✅ Credentials loaded from encrypted vault")
+                        if self.security_manager.vault:
+                            Config.CLIENT_ID = self.security_manager.vault.get_secret('DHAN_CLIENT_ID') or Config.CLIENT_ID
+                            Config.ACCESS_TOKEN = self.security_manager.vault.get_secret('DHAN_ACCESS_TOKEN') or ""
+                            logger.info("✅ Credentials loaded from encrypted vault")
                     except Exception as e:
                         logger.warning(f"Using environment credentials: {e}")
                 

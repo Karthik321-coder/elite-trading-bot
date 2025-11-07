@@ -128,6 +128,28 @@ class SecureStorage:
         except Exception as e:
             logger.error(f"Secure load error: {e}")
             return None
+    
+    def set_secret(self, key: str, value: str):
+        """Store a secret securely"""
+        try:
+            encrypted = self.encryption.encrypt(value)
+            self.storage[key] = encrypted
+            logger.info(f"🔐 Secret stored: {key}")
+        except Exception as e:
+            logger.error(f"Secret storage error: {e}")
+    
+    def get_secret(self, key: str) -> Optional[str]:
+        """Retrieve a secret"""
+        try:
+            if key not in self.storage:
+                return None
+            
+            encrypted = self.storage[key]
+            decrypted = self.encryption.decrypt(encrypted)
+            return decrypted
+        except Exception as e:
+            logger.error(f"Secret retrieval error: {e}")
+            return None
 
 
 class AccessControl:
@@ -208,3 +230,61 @@ class SecureEnvironmentLoader:
         """Load environment variable"""
         import os
         return os.getenv(key)
+
+
+class UltimateSecurityManager:
+    """
+    Ultimate Security Manager - Comprehensive Security System
+    Handles encryption, API keys, secure storage, and access control
+    """
+    
+    def __init__(self, master_password: str = None, jwt_secret: str = None):
+        """
+        Initialize Ultimate Security Manager
+        
+        Args:
+            master_password: Master password for encryption
+            jwt_secret: JWT secret key for token signing
+        """
+        self.master_password = master_password or "elite-master-2025"
+        self.jwt_secret = jwt_secret or "elite-jwt-secret-2025"
+        
+        # Initialize subsystems
+        self.encryption = CredentialEncryption(self.master_password)
+        self.api_manager = APIKeyManager()
+        self.storage = SecureStorage()
+        self.access_control = AccessControl()
+        
+        # Create vault for credential storage
+        self.vault = self.storage
+        
+        logger.info("✅ Ultimate Security Manager initialized")
+    
+    def encrypt_credential(self, credential: str) -> str:
+        """Encrypt a credential"""
+        return self.encryption.encrypt(credential)
+    
+    def decrypt_credential(self, encrypted: str) -> str:
+        """Decrypt a credential"""
+        return self.encryption.decrypt(encrypted)
+    
+    def store_api_keys(self, name: str, key: str, secret: str):
+        """Store API keys securely"""
+        self.api_manager.store_key(name, key, secret)
+    
+    def get_api_keys(self, name: str) -> Optional[Dict]:
+        """Retrieve API keys"""
+        return self.api_manager.get_key(name)
+    
+    def create_session(self, user_id: str) -> str:
+        """Create a new session"""
+        return self.access_control.create_session(user_id)
+    
+    def validate_session(self, session_id: str) -> bool:
+        """Validate a session"""
+        return self.access_control.validate_session(session_id)
+    
+    def hash_password(self, password: str) -> str:
+        """Hash a password"""
+        return self.encryption.hash_password(password)
+

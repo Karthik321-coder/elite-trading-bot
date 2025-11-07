@@ -28,10 +28,17 @@ logger = logging.getLogger(__name__)
 class UltraLowLatencyExecutor:
     """Ultra-low latency order execution"""
     
-    def __init__(self):
-        self.avg_latency_ms = 0.5  # Target sub-millisecond
+    def __init__(self, target_latency_ms: float = 1.0):
+        """
+        Initialize Ultra-Low Latency Executor
+        
+        Args:
+            target_latency_ms: Target execution latency in milliseconds
+        """
+        self.target_latency_ms = target_latency_ms
+        self.avg_latency_ms = 0.5  # Current average latency
         self.order_queue = deque()
-        logger.info("✅ Ultra-Low Latency Executor initialized (<1ms target)")
+        logger.info(f"✅ Ultra-Low Latency Executor initialized (<{target_latency_ms}ms target)")
     
     def execute_order(self, order: Dict) -> Dict:
         """Execute order with minimal latency"""
@@ -46,6 +53,9 @@ class UltraLowLatencyExecutor:
         
         end = time.perf_counter()
         result['latency_ms'] = (end - start) * 1000
+        
+        # Update average latency
+        self.avg_latency_ms = (self.avg_latency_ms * 0.9) + (result['latency_ms'] * 0.1)
         
         return result
 

@@ -703,21 +703,36 @@ class SecurityAuditTrail:
         self.audit_file = Path("security_audit_trail.jsonl")
         logger.info("📋 Security Audit Trail initialized")
     
-    def log_event(self, event_type: str, user_id: str = None, 
-                  ip_address: str = None, details: Dict = None):
-        """Log security event"""
+    def log_event(self, event_type: str, user_id: str = None, user: str = None,
+                  ip_address: str = None, description: str = None, details: Dict = None):
+        """
+        Log security event
+        
+        Args:
+            event_type: Type of security event
+            user_id: User identifier (deprecated, use 'user')
+            user: User identifier (preferred)
+            ip_address: IP address of the event
+            description: Event description
+            details: Additional event details
+        """
+        # Support both user_id and user parameters
+        actual_user = user or user_id
+        
         event = {
             "timestamp": datetime.utcnow().isoformat(),
             "event_type": event_type,
-            "user_id": user_id,
+            "user": actual_user,
             "ip_address": ip_address,
+            "description": description,
             "details": details or {}
         }
         
         with open(self.audit_file, 'a', encoding='utf-8') as f:
             f.write(json.dumps(event) + '\n')
         
-        logger.info(f"📝 Audit: {event_type} | User: {user_id} | IP: {ip_address}")
+        desc_str = f" - {description}" if description else ""
+        logger.info(f"📝 Audit: {event_type} | User: {actual_user} | IP: {ip_address}{desc_str}")
     
     def get_events(self, limit: int = 100, event_type: str = None) -> List[Dict]:
         """Retrieve recent security events"""

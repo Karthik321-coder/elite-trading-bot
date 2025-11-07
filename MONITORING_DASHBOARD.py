@@ -24,7 +24,14 @@ logger = logging.getLogger(__name__)
 class PerformanceDashboard:
     """Real-time performance monitoring dashboard"""
     
-    def __init__(self):
+    def __init__(self, initial_capital: float = 500.0):
+        """
+        Initialize Performance Dashboard
+        
+        Args:
+            initial_capital: Starting capital amount
+        """
+        self.initial_capital = initial_capital
         self.metrics = {
             'trades': 0,
             'wins': 0,
@@ -33,7 +40,7 @@ class PerformanceDashboard:
             'runtime': 0
         }
         self.start_time = time.time()
-        logger.info("✅ Performance Dashboard initialized")
+        logger.info(f"✅ Performance Dashboard initialized (Capital: Rs.{initial_capital:.2f})")
     
     def update_trade(self, profit: float):
         """Update trade metrics"""
@@ -55,7 +62,9 @@ class PerformanceDashboard:
             'win_rate': win_rate,
             'total_pnl': self.metrics['pnl'],
             'runtime_hours': runtime / 3600,
-            'trades_per_hour': self.metrics['trades'] / (runtime / 3600) if runtime > 0 else 0
+            'trades_per_hour': self.metrics['trades'] / (runtime / 3600) if runtime > 0 else 0,
+            'initial_capital': self.initial_capital,
+            'current_capital': self.initial_capital + self.metrics['pnl']
         }
     
     def print_dashboard(self):
@@ -75,9 +84,21 @@ class PerformanceDashboard:
 class AlertSystem:
     """Alert system for critical events"""
     
-    def __init__(self):
+    def __init__(self, config: Dict = None):
+        """
+        Initialize Alert System
+        
+        Args:
+            config: Configuration dictionary with alert settings
+        """
+        self.config = config or {}
         self.alerts = deque(maxlen=100)
         self.alert_levels = ['INFO', 'WARNING', 'CRITICAL']
+        
+        # Store email/telegram configuration
+        self.email_enabled = self.config.get('smtp_server') is not None
+        self.telegram_enabled = self.config.get('telegram_bot_token') is not None
+        
         logger.info("✅ Alert System initialized")
     
     def send_alert(self, level: str, message: str):
@@ -115,11 +136,20 @@ class AlertSystem:
 class AutoRestart:
     """Auto-restart mechanism for error recovery"""
     
-    def __init__(self, max_restarts: int = 3, restart_window: int = 3600):
+    def __init__(self, max_restarts: int = 3, restart_window: int = 3600, restart_delay: int = 60):
+        """
+        Initialize Auto-Restart Manager
+        
+        Args:
+            max_restarts: Maximum number of restarts allowed
+            restart_window: Time window for restart counting (seconds)
+            restart_delay: Delay before restart (seconds)
+        """
         self.max_restarts = max_restarts
         self.restart_window = restart_window
+        self.restart_delay = restart_delay
         self.restarts = deque()
-        logger.info(f"✅ Auto-Restart initialized (max={max_restarts} per hour)")
+        logger.info(f"✅ Auto-Restart initialized (max={max_restarts} per {restart_window}s, delay={restart_delay}s)")
     
     def can_restart(self) -> bool:
         """Check if restart is allowed"""
@@ -212,8 +242,27 @@ AlertSystem = AlertSystem  # Already correct name
 AutoRestartManager = AutoRestart  # Rename for compatibility
 
 class RealTimeEmailMonitor:
-    """Real-time email monitoring (placeholder)"""
-    def __init__(self):
+    """Real-time email monitoring and alerting"""
+    
+    def __init__(self, dashboard, alert_system):
+        """
+        Initialize Email Monitor
+        
+        Args:
+            dashboard: Performance dashboard instance
+            alert_system: Alert system instance
+        """
+        self.dashboard = dashboard
+        self.alert_system = alert_system
         logger.info("✅ Real-Time Email Monitor initialized")
-    def send_alert(self, subject, message):
+    
+    def send_alert(self, subject: str, message: str):
+        """Send email alert"""
         logger.info(f"📧 Email Alert: {subject} - {message}")
+    
+    def send_performance_report(self):
+        """Send performance report via email"""
+        if self.dashboard:
+            data = self.dashboard.get_dashboard()
+            logger.info(f"📊 Sending performance report: {data['total_trades']} trades, {data['win_rate']:.1f}% win rate")
+

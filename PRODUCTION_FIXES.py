@@ -24,10 +24,17 @@ logger = logging.getLogger(__name__)
 class TokenManager:
     """Manage API tokens with auto-refresh"""
     
-    def __init__(self):
-        self.token = None
+    def __init__(self, client_id: str = None, access_token: str = None):
+        """Initialize Token Manager with optional credentials"""
+        self.client_id = client_id
+        self.token = access_token
         self.expiry = None
         self.refresh_threshold = 300  # 5 minutes
+        
+        # Set initial expiry if token is provided
+        if self.token:
+            self.expiry = datetime.now() + timedelta(hours=24)
+        
         logger.info("✅ Token Manager initialized")
     
     def is_valid(self) -> bool:
@@ -40,10 +47,46 @@ class TokenManager:
         """Refresh token if needed"""
         if not self.is_valid():
             logger.info("🔄 Token refresh triggered")
-            self.token = f"token_{int(time.time())}"
+            logger.warning("⚠️ Token expired - Please update ACCESS_TOKEN in .env file")
+            return False
+        return True
+    
+    def update_token(self, new_token: str):
+        """Update token manually"""
+        self.token = new_token
+        self.expiry = datetime.now() + timedelta(hours=24)
+        logger.info("✅ Token updated successfully")
+    
+    def validate_token(self):
+        """
+        Validate token and return detailed status
+        
+        Returns:
+            tuple: (is_valid: bool, message: str, details: dict)
+        """
+        if not self.token:
+            return False, "❌ No access token provided", None
+        
+        if not self.expiry:
+            # Token provided but no expiry set - assume it's valid for 24 hours
             self.expiry = datetime.now() + timedelta(hours=24)
-            return True
-        return False
+        
+        now = datetime.now()
+        age = now - (self.expiry - timedelta(hours=24))
+        age_hours = age.total_seconds() / 3600
+        
+        details = {
+            'issued_at': (self.expiry - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S'),
+            'expires_at': self.expiry.strftime('%Y-%m-%d %H:%M:%S'),
+            'age_hours': age_hours
+        }
+        
+        if now >= self.expiry:
+            return False, f"❌ Token expired {age_hours - 24:.1f} hours ago", details
+        elif now >= self.expiry - timedelta(seconds=self.refresh_threshold):
+            return True, f"⚠️ Token expiring soon (in {(self.expiry - now).total_seconds() / 60:.0f} minutes)", details
+        else:
+            return True, f"✅ Token is valid", details
 
 
 class CircuitBreaker:
@@ -116,22 +159,40 @@ class PerformanceMonitor:
 class DataValidator:
     """Validate and sanitize data"""
     
-    def __init__(self):
+    def __init__(self, strict_mode: bool = False):
+        """
+        Initialize Data Validator
+        
+        Args:
+            strict_mode: If True, enforce stricter validation rules
+        """
+        self.strict_mode = strict_mode
         self.validation_rules = {
             'price': lambda x: x > 0 and x < 1000000,
             'volume': lambda x: x >= 0,
             'rsi': lambda x: 0 <= x <= 100,
             'confidence': lambda x: 0 <= x <= 1
         }
-        logger.info("✅ Data Validator initialized")
+        
+        if strict_mode:
+            # Add stricter rules for production
+            self.validation_rules['price'] = lambda x: x > 0 and x < 100000  # Lower max
+            self.validation_rules['volume'] = lambda x: x > 0  # Must be positive
+        
+        mode_str = "STRICT" if strict_mode else "STANDARD"
+        logger.info(f"✅ Data Validator initialized ({mode_str} mode)")
     
     def validate(self, data: Dict, schema: Dict) -> bool:
         """Validate data against schema"""
         try:
             for field, rule in schema.items():
                 if field not in data:
+                    if self.strict_mode:
+                        logger.error(f"Validation failed: Missing field '{field}'")
                     return False
                 if not rule(data[field]):
+                    if self.strict_mode:
+                        logger.error(f"Validation failed: Invalid value for '{field}': {data[field]}")
                     return False
             return True
         except Exception as e:
