@@ -109,11 +109,17 @@ class MultiExchangeArbitrage:
 class OnlineLearningAI:
     """Online learning AI that adapts in real-time"""
     
-    def __init__(self):
+    def __init__(self, learning_rate: float = 0.001):
+        """
+        Initialize Online Learning AI
+        
+        Args:
+            learning_rate: Learning rate for model updates
+        """
         self.model_version = 1.0
-        self.learning_rate = 0.001
+        self.learning_rate = learning_rate
         self.experience_buffer = deque(maxlen=1000)
-        logger.info("✅ Online Learning AI initialized")
+        logger.info(f"✅ Online Learning AI initialized (lr={learning_rate})")
     
     def learn_from_trade(self, trade_data: Dict):
         """Learn from executed trade"""
@@ -134,16 +140,23 @@ class OnlineLearningAI:
         avg_profit = np.mean([t['outcome'] for t in recent_trades])
         
         if avg_profit > 0:
-            self.model_version += 0.01
-            logger.info(f"📈 Model updated: v{self.model_version:.2f}")
+            self.model_version += self.learning_rate * 10  # Scale by learning rate
+            logger.info(f"📈 Model updated: v{self.model_version:.2f} (lr={self.learning_rate})")
 
 
 class MarketMicrostructureAnalyzer:
     """Advanced market microstructure analysis"""
     
-    def __init__(self):
+    def __init__(self, depth_levels: int = 10):
+        """
+        Initialize Market Microstructure Analyzer
+        
+        Args:
+            depth_levels: Number of order book depth levels to analyze
+        """
+        self.depth_levels = depth_levels
         self.tick_data = deque(maxlen=10000)
-        logger.info("✅ Market Microstructure Analyzer initialized")
+        logger.info(f"✅ Market Microstructure Analyzer initialized ({depth_levels} depth levels)")
     
     def analyze_order_flow(self, ticks: List[Dict]) -> Dict:
         """Analyze order flow patterns"""
@@ -158,7 +171,8 @@ class MarketMicrostructureAnalyzer:
                 'order_flow_imbalance': imbalance,
                 'buy_pressure': buy_volume / total if total > 0 else 0,
                 'sell_pressure': sell_volume / total if total > 0 else 0,
-                'signal': 'bullish' if imbalance > 0.2 else 'bearish' if imbalance < -0.2 else 'neutral'
+                'signal': 'bullish' if imbalance > 0.2 else 'bearish' if imbalance < -0.2 else 'neutral',
+                'depth_levels_analyzed': self.depth_levels
             }
             
         except Exception as e:
