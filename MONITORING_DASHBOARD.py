@@ -200,3 +200,20 @@ def get_monitoring_systems():
         'auto_restart': auto_restart,
         'health': health_monitor
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPATIBILITY EXPORTS - Match main bot's expected class names
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Re-export with expected names  
+PerformanceDashboard = PerformanceDashboard  # Already correct name
+AlertSystem = AlertSystem  # Already correct name
+AutoRestartManager = AutoRestart  # Rename for compatibility
+
+class RealTimeEmailMonitor:
+    """Real-time email monitoring (placeholder)"""
+    def __init__(self):
+        logger.info("✅ Real-Time Email Monitor initialized")
+    def send_alert(self, subject, message):
+        logger.info(f"📧 Email Alert: {subject} - {message}")

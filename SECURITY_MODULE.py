@@ -179,3 +179,32 @@ def get_security_systems():
         'storage': secure_storage,
         'access': access_control
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPATIBILITY EXPORTS - Match main bot's expected class names
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class EncryptedCredentialManager(CredentialEncryption):
+    """Encrypted credential manager"""
+    pass
+
+class APIKeyValidator:
+    """Validate API keys"""
+    def __init__(self):
+        self.manager = APIKeyManager()
+        logger.info("✅ API Key Validator initialized")
+    
+    def validate(self, key, secret):
+        """Validate API key pair"""
+        return len(key) > 0 and len(secret) > 0
+
+class SecureEnvironmentLoader:
+    """Load environment variables securely"""
+    def __init__(self):
+        logger.info("✅ Secure Environment Loader initialized")
+    
+    def load(self, key):
+        """Load environment variable"""
+        import os
+        return os.getenv(key)

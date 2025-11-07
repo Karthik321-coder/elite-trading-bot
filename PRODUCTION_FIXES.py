@@ -204,3 +204,14 @@ def get_production_systems():
         'data_validator': data_validator,
         'api_validator': api_validator
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPATIBILITY EXPORTS - Match main bot's expected class names
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Re-export with expected names
+DhanTokenManager = TokenManager
+CircuitBreaker = CircuitBreaker  # Already correct name
+PerformanceMonitor = PerformanceMonitor  # Already correct name
+DataValidator = DataValidator  # Already correct name

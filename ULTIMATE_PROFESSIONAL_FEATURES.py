@@ -292,3 +292,35 @@ def get_professional_features():
         'platform_bridge': platform_bridge,
         'strategy_framework': strategy_framework
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPATIBILITY EXPORTS - Match main bot's expected class names
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Re-export with expected names
+UltraLowLatencyEngine = UltraLowLatencyExecutor  # Rename
+MultiExchangeArbitrageEngine = MultiExchangeArbitrage  # Rename
+OnlineLearningAI = OnlineLearningAI  # Already correct name
+MarketMicrostructureAnalyzer = MarketMicrostructureAnalyzer  # Already correct name
+RegulatoryComplianceLogger = ComplianceLogger  # Rename
+DisasterRecoverySystem = DisasterRecovery  # Rename
+AlgoTradingPlatformBridge = PlatformBridge  # Rename
+StrategyFramework = AdvancedStrategyFramework  # Rename
+
+class UltimateProfessionalSystem:
+    """Ultimate professional trading system"""
+    def __init__(self):
+        self.executor = ultra_executor
+        self.arbitrage = arbitrage
+        self.ai = online_ai
+        self.microstructure = microstructure
+        self.compliance = compliance
+        self.recovery = disaster_recovery
+        self.bridge = platform_bridge
+        self.strategies = strategy_framework
+        logger.info("✅ Ultimate Professional System initialized")
+    
+    def get_all_systems(self):
+        """Get all professional systems"""
+        return get_professional_features()
