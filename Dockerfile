@@ -12,10 +12,11 @@ FROM python:3.11-slim-bullseye AS builder
 
 WORKDIR /app
 
-# Install ONLY build essentials
+# Install build essentials + runtime libraries for LightGBM/XGBoost
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -45,9 +46,10 @@ FROM python:3.11-slim-bullseye
 
 WORKDIR /app
 
-# Install ONLY runtime dependency (curl for health check)
+# Install runtime dependencies (libgomp1 for LightGBM/XGBoost, curl for health check)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
