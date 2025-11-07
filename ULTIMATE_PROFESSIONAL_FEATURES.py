@@ -183,9 +183,10 @@ class MarketMicrostructureAnalyzer:
 class ComplianceLogger:
     """Compliance and audit logging"""
     
-    def __init__(self):
+    def __init__(self, log_dir: str = 'compliance_logs'):
+        self.log_dir = log_dir
         self.audit_log = deque(maxlen=10000)
-        logger.info("✅ Compliance Logger initialized")
+        logger.info(f"✅ Compliance Logger initialized (log_dir='{log_dir}')")
     
     def log_trade(self, trade: Dict):
         """Log trade for compliance"""
