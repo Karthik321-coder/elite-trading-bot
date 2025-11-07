@@ -280,10 +280,11 @@ class PlatformBridge:
 class AdvancedStrategyFramework:
     """Advanced multi-strategy framework"""
     
-    def __init__(self):
+    def __init__(self, strategies_dir: str = 'strategies'):
+        self.strategies_dir = strategies_dir
         self.strategies = {}
         self.active_strategy = None
-        logger.info("✅ Advanced Strategy Framework initialized")
+        logger.info(f"✅ Advanced Strategy Framework initialized (dir={strategies_dir})")
     
     def register_strategy(self, name: str, strategy):
         """Register a trading strategy"""
